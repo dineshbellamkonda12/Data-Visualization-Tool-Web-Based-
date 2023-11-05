@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stanstec Rainfall at RG_A in Birmingham</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #graphDiv,
+        #map {
+            min-height: 400px;
+        }
+    </style>
+</head>
+
+<body class="bg-light">
+
+<div class="container mt-5">
+    <div class="container row justify-content-center mb-5">
+        <h3>Stanstec Rainfall at RG_A in Birmingham</h3>
+    </div>
+
+    <div class="mb-4">
+        <!-- Button trigger modal -->
+        
+        <div class="container">
+            <div class="row">
+                <div class="col text-left">
+                    <button type="button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#filterModal">
+                        Select Type of Graph
+                    </button>
+                </div>
+                <div class="col text-right">
+                    <button type="button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#filterModal">
+                        Filter Data
+                    </button>
+                </div>
+            </div>
+        </div>
+    
+        <!-- Modal -->
+        <div class="modal fade mb-4" id="filterModal" tabindex="-1" role="dialog" aria-labelledby="filterModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                <h5 class="modal-title text-right" id="filterModalLabel">Filter Data Using Start and End Dates Below</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+                </div>
+                <div class="modal-body">
+                    <div class="row justify-content-center mb-4">
+                        <div class="col w-25">
+                            <div class="form-group">
+                                <label for="start_date">Select Start Date and Time:</label>
+                                <input type="text" id="start_date" name="start_date" class="form-control">
+                            </div>
+                        </div>
+                        <div class="col w-25">
+                            <div class="form-group">
+                                <label for="end_date">Select End Date and Time:</label>
+                                <input type="text" id="end_date" name="end_date" class="form-control">
+                            </div>
+                        </div>
+                    </div>
+                <div class="row mb-4">
+                    <div class="col">
+                        <button onclick="filterData()" class="btn btn-primary btn-block" data-dismiss="modal">Filter Data</button> 
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" onclick="refreshPage()">Reset</button>
+                    </div>
+                </div> 
+                <div class="row mb-4">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" onclick="filterDataByMonth()" data-dismiss="modal">Aggregate Data by month</button>
+                    </div>
+                    <div class="col">
+                        <button type="button" class="btn btn-primary btn-block" onclick="filterDataByYear()" data-dismiss="modal">Aggregate Data by year</button>
+                    </div>
+                </div>    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="justify-content-center mb-5">
+        <div class="border border-primary p-3 rounded mb-4">
+            <div id="graphDiv"></div>
+        </div>
+        <div class="border border-primary p-3 rounded">
+            <div id="map"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+<script>
+    var allDates = JSON.parse('{{ dates|safe }}');
+    var allRainfallValues = JSON.parse('{{ rainfall_values|safe }}');
+
+    var allMonths = JSON.parse('{{ months|safe }}');
+    var allRainfallValuesByMonths = JSON.parse('{{ rainfall_values_by_month|safe }}');
+
+    var allYears = JSON.parse('{{ years|safe }}');
+    var allRainfallValuesByYears = JSON.parse('{{ rainfall_values_by_year|safe }}');
+
+    var dates = allDates;
+    var rainfall_values = allRainfallValues;
+
+    var months = allMonths;
+    var rainfall_values_by_months = allRainfallValuesByMonths;
+
+    var years = allYears;
+    var rainfall_values_by_years = allRainfallValuesByYears;
+
+    var trace1 = {
+        x: dates,
+        y: rainfall_values,
+        type: 'bar',
+        marker: {
+            color: 'rgb(49,130,189)',
+            opacity: 0.7
+        }
+    };
+
+    var data = [trace1];
+
+    var layout = {
+        title: 'Rainfall Data Visualization',
+        xaxis: {
+            title: 'Date'
+        },
+        yaxis: {
+            title: 'Rainfall(mm)'
+        }
+    };
+
+    Plotly.newPlot('graphDiv', data, layout);
+
+    flatpickr("#start_date", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i:S",
+    });
+
+    flatpickr("#end_date", {
+        enableTime: true,
+        dateFormat: "Y-m-d H:i:S",
+    });
+
+    function refreshPage() {
+        location.reload();
+    }
+
+    function filterData() {
+        var startDate = document.getElementById("start_date").value;
+        var endDate = document.getElementById("end_date").value;
+
+        if (startDate && endDate) {
+            var filteredDates = [];
+            var filteredRainfallValues = [];
+
+            for (var i = 0; i < dates.length; i++) {
+                if (dates[i] >= startDate && dates[i] <= endDate) {
+                    filteredDates.push(dates[i]);
+                    filteredRainfallValues.push(rainfall_values[i]);
+                }
+            }
+
+            var filteredTrace = {
+                x: filteredDates,
+                y: filteredRainfallValues,
+                type: 'bar',
+                marker: {
+                    color: 'rgb(49,130,189)',
+                    opacity: 0.7
+                }
+            };
+
+            var filteredData = [filteredTrace];
+
+            Plotly.newPlot('graphDiv', filteredData, layout);
+        }
+    }
+
+    function filterDataByMonth() {
+        var trace1 = {
+            x: months,
+            y: rainfall_values_by_months,
+            type: 'bar',
+            marker: {
+                color: 'rgb(49,130,189)',
+                opacity: 0.7
+            }
+        };
+    
+        var data = [trace1];
+    
+        var layout = {
+            title: 'Rainfall Data Visualization',
+            xaxis: {
+                title: 'Date'
+            },
+            yaxis: {
+                title: 'Rainfall(mm)'
+            }
+        };
+    
+        Plotly.newPlot('graphDiv', data, layout);    
+    }
+
+    function filterDataByYear() {
+        var trace1 = {
+            x: years,
+            y: rainfall_values_by_years,
+            type: 'bar',
+            marker: {
+                color: 'rgb(49,130,189)',
+                opacity: 0.7
+            }
+        };
+    
+        var data = [trace1];
+    
+        var layout = {
+            title: 'Rainfall Data Visualization',
+            xaxis: {
+                title: 'Date'
+            },
+            yaxis: {
+                title: 'Rainfall(mm)'
+            }
+        };
+    
+        Plotly.newPlot('graphDiv', data, layout);    
+    }
+
+    // Creating a map
+    var map = L.map('map').setView([52.48049047465328, -1.8978672581749725], 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+        maxZoom: 18,
+    }).addTo(map);
+
+    // Marker for the rain gauge
+    L.marker([52.48049047465328, -1.8978672581749725]).addTo(map)
+    .bindPopup('Rain Gauge RG_A in Birmingham at 52.48049047465328 and -1.8978672581749725');
+</script>
+
+</body>
+
+</html>
+
