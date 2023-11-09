@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rainfall Prediction</title>
+    <!-- Include Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <!-- Include Flatpickr CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3">
+        <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'visualize_data' %}">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'predict_range' %}">Predict Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'custom_data' %}">Custom Visualization</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-5">
+        <div class="container row">
+            <div class="col border border-info border-5 rounded p-3">
+                <h1>Rainfall Prediction</h1>
+                <label for="startDateInput">Start Date:</label>
+                <input id="startDateInput" class="form-control mb-3 w-auto" placeholder="Select Start Date" data-input>
+                <label for="endDateInput">End Date:</label>
+                <input id="endDateInput" class="form-control mb-3 w-auto" placeholder="Select End Date" data-input>
+                <button id="predictBtn" class="btn btn-primary mt-2 mb-3">Predict Rainfall</button>
+                <div id="loading" style="display: none;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="sr-only">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col border border-info border-5 rounded p-3">
+                <h1 class="mb-3">Data Prediction</h1>
+                <p>This data is coming from backend database and this data is predicted using linear regression machine learning model, 
+                    The data is not accurate because machine learning models needs more historical data to predict the future, Please enter 
+                    start date and end date and click on predict rainfall button to generate historical data as a chart and as a table. 
+                    The data generated in the below graph is aggregated by day, which will show average rainfall per day. 
+                </p>
+            </div>
+        </div>
+        <div class="container mt-5">
+            <div id="chart"></div>
+                <table class="table mt-3">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Rainfall (mm)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="predictionTableBody">
+                        <!-- Predicted data will be displayed here -->
+                    </tbody>
+                </table>
+        </div>
+    </div>
+
+    <!-- Include jQuery -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <!-- Include Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- Include Plotly JS -->
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            flatpickr('#startDateInput', {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+
+            flatpickr('#endDateInput', {
+                enableTime: true,
+                dateFormat: "Y-m-d H:i",
+            });
+
+            $('#predictBtn').on('click', function () {
+                var startDate = $('#startDateInput').val();
+                var endDate = $('#endDateInput').val();
+                $('#loading').show();
+                $.ajax({
+                    url: '/predict_range/',
+                    type: 'POST',
+                    data: {
+                        'start_date': startDate,
+                        'end_date': endDate,
+                        'csrfmiddlewaretoken': '{{ csrf_token }}'
+                    },
+                    success: function (data) {
+                        $('#loading').hide();
+                        $('#predictionTableBody').empty();
+                        data.predictions.forEach(function (item) {
+                            $('#predictionTableBody').append('<tr><td>' + item.date + '</td><td>' + item.prediction + '</td></tr>');
+                        });
+                        var dates = data.predictions.map(function (item) {
+                            return item.date;
+                        });
+                        var values = data.predictions.map(function (item) {
+                            return item.prediction;
+                        });
+                        var trace = {
+                            x: dates,
+                            y: values,
+                            type: 'bar'
+                        };
+                        var layout = {
+                            title: 'Rainfall Prediction Bar Chart'
+                        };
+                        var config = {responsive: true};
+                        Plotly.newPlot('chart', [trace], layout, config);
+                    },
+                    error: function (error) {
+                        $('#loading').hide();
+                        console.error('Error fetching data:', error);
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

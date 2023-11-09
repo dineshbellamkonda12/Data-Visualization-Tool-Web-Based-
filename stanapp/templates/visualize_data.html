@@ -13,14 +13,44 @@
         #map {
             min-height: 400px;
         }
+
+        .custom-btn-width {
+            width: 150px;
+        }
     </style>
 </head>
 
 <body class="bg-light">
 
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3">
+    <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ml-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="{% url 'visualize_data' %}">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'predict_range' %}">Predict Data</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'custom_data' %}">Custom Visualization</a>
+            </li>
+        </ul>
+    </div>
+</nav>
+
 <div class="container mt-5">
-    <div class="container row justify-content-center mb-5">
-        <h3>Stanstec Rainfall at RG_A in Birmingham</h3>
+    <div class="container row justify-content-center mb-3">
+        <h2 class="text-center">Stanstec Rainfall at RG_A in Birmingham</h2>
+    </div>
+
+    <div class="container row justify-content-center mb-3">
+        <p class="text-center">This chart visualizes the data from backend DataBase,The data is regarding the rainfall(RG_A) in Birmingham, Please click on "Monthly button" to aggregate data by month or "yearly" button to aggregate data by year
+            User the "Filter" Button to filter data by providing start and end date.
+        </p>
     </div>
 
     <div class="mb-4">
@@ -28,13 +58,13 @@
         
         <div class="container">
             <div class="row">
-                <div class="col text-left">
-                    <button type="button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#filterModal">
-                        Select Type of Graph
-                    </button>
-                </div>
+                
+                <div class="col btn-group text-left">
+                    <button type="button" class="btn btn-info" onclick="aggregateDataByMonth()" data-dismiss="modal">Monthly</button>
+                    <button type="button" class="btn btn-secondary" onclick="aggregateDataByYear()" data-dismiss="modal">Yearly</button>
+                </div> 
                 <div class="col text-right">
-                    <button type="button" class="btn btn-primary mr-3" data-toggle="modal" data-target="#filterModal">
+                    <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#filterModal">
                         Filter Data
                     </button>
                 </div>
@@ -46,45 +76,34 @@
             <div class="modal-dialog" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                <h5 class="modal-title text-right" id="filterModalLabel">Filter Data Using Start and End Dates Below</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-                </div>
-                <div class="modal-body">
-                    <div class="row justify-content-center mb-4">
-                        <div class="col w-25">
-                            <div class="form-group">
-                                <label for="start_date">Select Start Date and Time:</label>
-                                <input type="text" id="start_date" name="start_date" class="form-control">
+                    <h5 class="modal-title text-center" id="filterModalLabel">Filter Data Using Start and End Dates Below</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row justify-content-center mb-4">
+                            <div class="col w-25">
+                                <div class="form-group">
+                                    <label for="start_date">Select Start Date and Time:</label>
+                                    <input type="text" id="start_date" name="start_date" class="form-control">
+                                </div>
+                            </div>
+                            <div class="col w-25">
+                                <div class="form-group">
+                                    <label for="end_date">Select End Date and Time:</label>
+                                    <input type="text" id="end_date" name="end_date" class="form-control">
+                                </div>
                             </div>
                         </div>
-                        <div class="col w-25">
-                            <div class="form-group">
-                                <label for="end_date">Select End Date and Time:</label>
-                                <input type="text" id="end_date" name="end_date" class="form-control">
-                            </div>
+                    <div class="row mb-4">
+                        <div class="col">
+                            <button onclick="filterData()" class="btn btn-primary btn-block" data-dismiss="modal">Filter Data</button> 
                         </div>
-                    </div>
-                <div class="row mb-4">
-                    <div class="col">
-                        <button onclick="filterData()" class="btn btn-primary btn-block" data-dismiss="modal">Filter Data</button> 
-                    </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-primary btn-block" onclick="refreshPage()">Reset</button>
-                    </div>
-                </div> 
-                <div class="row mb-4">
-                    <div class="col">
-                        <button type="button" class="btn btn-primary btn-block" onclick="filterDataByMonth()" data-dismiss="modal">Aggregate Data by month</button>
-                    </div>
-                    <div class="col">
-                        <button type="button" class="btn btn-primary btn-block" onclick="filterDataByYear()" data-dismiss="modal">Aggregate Data by year</button>
-                    </div>
-                </div>    
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                        <div class="col">
+                            <button type="button" class="btn btn-info btn-block" onclick="refreshPage()">Reset</button>
+                        </div>
+                    </div> 
                 </div>
             </div>
             </div>
@@ -105,7 +124,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
 <script>
@@ -126,6 +145,10 @@
 
     var years = allYears;
     var rainfall_values_by_years = allRainfallValuesByYears;
+
+    let isaggregatedatabymonth = false;
+    let isaggregatedatabyyear = false;
+
 
     var trace1 = {
         x: dates,
@@ -151,12 +174,12 @@
 
     Plotly.newPlot('graphDiv', data, layout);
 
-    flatpickr("#start_date", {
+    var startDatePicker = flatpickr("#start_date", {
         enableTime: true,
         dateFormat: "Y-m-d H:i:S",
     });
 
-    flatpickr("#end_date", {
+    var endDatePicker = flatpickr("#end_date", {
         enableTime: true,
         dateFormat: "Y-m-d H:i:S",
     });
@@ -180,6 +203,30 @@
                 }
             }
 
+            if(isaggregatedatabymonth) {
+                filteredDates.splice(0, filteredDates.length);
+                filteredRainfallValues.splice(0, filteredRainfallValues.length);
+                for (var i = 0; i < months.length; i++) {
+                    if (months[i] >= startDate && months[i] <= endDate) {
+                        filteredDates.push(months[i]);
+                        filteredRainfallValues.push(rainfall_values_by_months[i]);
+                    }
+                }
+                isaggregatedatabymonth = false;
+            }
+
+            if(isaggregatedatabyyear) {
+                filteredDates.splice(0, filteredDates.length);
+                filteredRainfallValues.splice(0, filteredRainfallValues.length);
+                for (var i = 0; i < years.length; i++) {
+                    if (years[i] >= startDate && years[i] <= endDate) {
+                        filteredDates.push(years[i]);
+                        filteredRainfallValues.push(rainfall_values_by_years[i]);
+                    }
+                }
+                isaggregatedatabyyear = false;
+            }
+
             var filteredTrace = {
                 x: filteredDates,
                 y: filteredRainfallValues,
@@ -196,13 +243,13 @@
         }
     }
 
-    function filterDataByMonth() {
+    function aggregateDataByMonth() {
         var trace1 = {
             x: months,
             y: rainfall_values_by_months,
             type: 'bar',
             marker: {
-                color: 'rgb(49,130,189)',
+                color: 'rgb(19,132,150)',
                 opacity: 0.7
             }
         };
@@ -219,16 +266,33 @@
             }
         };
     
-        Plotly.newPlot('graphDiv', data, layout);    
+        Plotly.newPlot('graphDiv', data, layout); 
+        isaggregatedatabymonth = true;
+
+        startDatePicker.destroy();
+        startDatePicker = flatpickr("#start_date", {
+            enableTime: false,
+            dateFormat: "Y-m",
+            altInput: true,
+            altFormat: "F Y",
+        });
+        
+        endDatePicker.destroy();
+        endDatePicker = flatpickr("#end_date", {
+            enableTime: false,
+            dateFormat: "Y-m",
+            altInput: true,
+            altFormat: "F Y",
+        });
     }
 
-    function filterDataByYear() {
+    function aggregateDataByYear() {
         var trace1 = {
             x: years,
             y: rainfall_values_by_years,
             type: 'bar',
             marker: {
-                color: 'rgb(49,130,189)',
+                color: 'rgb(108,117,125)',
                 opacity: 0.7
             }
         };
@@ -245,7 +309,20 @@
             }
         };
     
-        Plotly.newPlot('graphDiv', data, layout);    
+        Plotly.newPlot('graphDiv', data, layout);   
+        isaggregatedatabyyear = true; 
+        
+        startDatePicker.destroy();
+        startDatePicker = flatpickr("#start_date", {
+            enableTime: false,
+            dateFormat: "Y",
+        });
+        
+        endDatePicker.destroy();
+        endDatePicker = flatpickr("#end_date", {
+            enableTime: false,
+            dateFormat: "Y",
+        });
     }
 
     // Creating a map

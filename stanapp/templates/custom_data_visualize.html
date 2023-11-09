@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom Visualization</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3">
+        <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="{% url 'visualize_data' %}">Home</span></a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'predict_range' %}">Predict Data</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'custom_data' %}">Custom Visualization</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container">
+        <h1 class='mt-4 text-center mb-4'>Custom Data Visualization</h1>
+        <div class="row mb-4">
+            <div class="col text-center">
+                <input type="file" id="input" />
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col d-flex justify-content-center">
+                <button type="button" class="btn btn-info mr-3" onclick="handleFile()">Generate Chart</button>
+                <button type="button" class="btn btn-info mr-3" onclick="refreshPage()">Reset</button>
+                <div class="spinner-border text-primary" role="status" id="loadingSpinner" style="display: none;">
+                    <span class="sr-only">Loading...</span>
+                </div>
+            </div>
+        </div>
+        <div id="chart"></div>
+    </div>
+
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+
+        function showLoader() {
+            $('#loadingSpinner').show();
+        }
+
+        function hideLoader() {
+            $('#loadingSpinner').hide();
+        }
+
+        function refreshPage() {
+            location.reload();
+        }
+
+        function handleFile() {
+            showLoader();
+            const files = document.getElementById('input').files;
+            if (!files || files.length === 0) {
+                return;
+            }
+
+            const file = files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, {
+                    type: 'array'
+                });
+
+                const sheetName = workbook.SheetNames[0];
+                const sheet = workbook.Sheets[sheetName];
+                const range = XLSX.utils.decode_range(sheet['!ref']);
+
+                const xValues = [];
+                const yValues = [];
+
+                for (let i = range.s.r; i <= range.e.r; ++i) {
+                    const cell = sheet[XLSX.utils.encode_cell({ r: i, c: 0 })];
+                    const cell2 = sheet[XLSX.utils.encode_cell({ r: i, c: 1 })];
+                    if (cell && cell2) {
+                        xValues.push(cell.v);
+                        yValues.push(cell2.v);
+                    }
+                }
+
+                const trace = {
+                    x: xValues,
+                    y: yValues,
+                    type: 'bar',
+                    marker: { color: 'red' },
+                };
+
+                const plotData = [trace];
+                const layout = {
+                    title: 'Excel Data Plot',
+                    xaxis: {
+                        title: 'X-axis'
+                    },
+                    yaxis: {
+                        title: 'Y-axis'
+                    }
+                };
+
+                Plotly.newPlot('chart', plotData, layout);
+                hideLoader();
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+    </script>
+    
+</body>
+
+</html>
