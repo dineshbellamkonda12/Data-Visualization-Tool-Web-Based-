@@ -4,24 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rainfall Prediction</title>
-    <!-- Include Bootstrap CSS -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
-    <!-- Include Flatpickr CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3 pl-5 pr-5">
         <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
-                <li class="nav-item active">
+                <li class="nav-item">
                     <a class="nav-link" href="{% url 'visualize_data' %}">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'predict_range' %}">Predict Data</a>
+                    <a class="nav-link active" href="{% url 'predict_range' %}">Predict Data</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'custom_data' %}">Custom Visualization</a>
@@ -32,7 +30,7 @@
     <div class="container mt-5">
         <div class="container row">
             <div class="col border border-info border-5 rounded p-3">
-                <h1>Rainfall Prediction</h1>
+                <h2>Rainfall Prediction</h2>
                 <label for="startDateInput">Start Date:</label>
                 <input id="startDateInput" class="form-control mb-3 w-auto" placeholder="Select Start Date" data-input>
                 <label for="endDateInput">End Date:</label>
@@ -45,7 +43,7 @@
                 </div>
             </div>
             <div class="col border border-info border-5 rounded p-3">
-                <h1 class="mb-3">Data Prediction</h1>
+                <h2 class="mb-3">Data Prediction</h2>
                 <p>This data is coming from backend database and this data is predicted using linear regression machine learning model, 
                     The data is not accurate because machine learning models needs more historical data to predict the future, Please enter 
                     start date and end date and click on predict rainfall button to generate historical data as a chart and as a table. 
@@ -55,7 +53,8 @@
         </div>
         <div class="container mt-5">
             <div id="chart"></div>
-                <table class="table mt-3">
+            <button id="downloadBtn" style="display: none;" class="btn btn-success mt-2 mb-3">Download as Excel</button>
+                <table id="predictionTable" class="table mt-3">
                     <thead>
                         <tr>
                             <th scope="col">Date</th>
@@ -69,15 +68,15 @@
         </div>
     </div>
 
-    <!-- Include jQuery -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
-    <!-- Include Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <!-- Include Plotly JS -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <script>
+        
         $(document).ready(function () {
             flatpickr('#startDateInput', {
                 enableTime: true,
@@ -103,6 +102,7 @@
                     },
                     success: function (data) {
                         $('#loading').hide();
+                        $('#downloadBtn').show();
                         $('#predictionTableBody').empty();
                         data.predictions.forEach(function (item) {
                             $('#predictionTableBody').append('<tr><td>' + item.date + '</td><td>' + item.prediction + '</td></tr>');
@@ -116,10 +116,20 @@
                         var trace = {
                             x: dates,
                             y: values,
-                            type: 'bar'
+                            type: 'bar',
+                            marker: {
+                                color: 'rgb(56,168,70)',
+                                opacity: 0.7
+                            }
                         };
                         var layout = {
-                            title: 'Rainfall Prediction Bar Chart'
+                            title: 'Rainfall Prediction Bar Chart',
+                            xaxis: {
+                                title: 'Date'
+                            },
+                            yaxis: {
+                                title: 'Rainfall(mm)'
+                            }
                         };
                         var config = {responsive: true};
                         Plotly.newPlot('chart', [trace], layout, config);
@@ -131,6 +141,28 @@
                 });
             });
         });
+
+        function downloadTableAsExcel() {
+            const table = document.getElementById('predictionTable');
+            const rows = table.querySelectorAll('tr');
+        
+            const wb = XLSX.utils.table_to_book(table, { sheet: 'Sheet JS' });
+            const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'binary' });
+        
+            function s2ab(s) {
+                const buf = new ArrayBuffer(s.length);
+                const view = new Uint8Array(buf);
+                for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
+                return buf;
+            }
+        
+            saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'tableData.xlsx');
+        }
+
+        $('#downloadBtn').on('click', function () {
+            downloadTableAsExcel();
+        });
+
     </script>
 </body>
 </html>

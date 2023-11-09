@@ -22,15 +22,15 @@
 
 <body class="bg-light">
 
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3">
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3 pl-5 pr-5">
     <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav ml-auto">
-            <li class="nav-item active">
-                <a class="nav-link" href="{% url 'visualize_data' %}">Home</a>
+            <li class="nav-item">
+                <a class="nav-link active" href="{% url 'visualize_data' %}">Home</a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{% url 'predict_range' %}">Predict Data</a>
@@ -44,12 +44,12 @@
 
 <div class="container mt-5">
     <div class="container row justify-content-center mb-3">
-        <h2 class="text-center">Stanstec Rainfall at RG_A in Birmingham</h2>
+        <h2 class="text-center">Rainfall at a rain gauge (RG_A) in central Birmingham </h2>
     </div>
 
     <div class="container row justify-content-center mb-3">
-        <p class="text-center">This chart visualizes the data from backend DataBase,The data is regarding the rainfall(RG_A) in Birmingham, Please click on "Monthly button" to aggregate data by month or "yearly" button to aggregate data by year
-            User the "Filter" Button to filter data by providing start and end date.
+        <p class="text-center">This chart visualizes the data from backend DataBase,The data is regarding the rainfall(RG_A) in Birmingham, Please click on "Monthly button" to aggregate data by month or "yearly" button to aggregate data by year. 
+            Use the "Filter" Button to filter data by providing start and end date.
         </p>
     </div>
 
@@ -114,6 +114,9 @@
         <div class="border border-primary p-3 rounded mb-4">
             <div id="graphDiv"></div>
         </div>
+        <div class="container row justify-content-center mb-3">
+            <h5 class="text-center">Birmingham Map at latitude= 52.48049047465328, longitude= -1.8978672581749725</h5>
+        </div>
         <div class="border border-primary p-3 rounded">
             <div id="map"></div>
         </div>
@@ -124,6 +127,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
@@ -325,16 +329,38 @@
         });
     }
 
-    // Creating a map
     var map = L.map('map').setView([52.48049047465328, -1.8978672581749725], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
         maxZoom: 18,
     }).addTo(map);
 
-    // Marker for the rain gauge
     L.marker([52.48049047465328, -1.8978672581749725]).addTo(map)
     .bindPopup('Rain Gauge RG_A in Birmingham at 52.48049047465328 and -1.8978672581749725');
+
+    var owmApiKey = "6a245621503bfcb08400248d491fca20"; 
+    var owmUrl = "https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid=" + owmApiKey;
+    var owmAttribution = 'Weather data © <a href="https://openweathermap.org/">OpenWeatherMap</a>';
+
+    var temp = L.tileLayer(owmUrl, {layer: 'temp_new', attribution: owmAttribution, opacity: 0.5});
+    temp.addTo(map);
+
+    var prec = L.tileLayer(owmUrl, {layer: 'precipitation_new', attribution: owmAttribution, opacity: 0.5});
+
+    var baseLayers = {
+        "OpenStreetMap": L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+            maxZoom: 18,
+        })
+    };
+
+    var overlays = {
+        "Temperature": temp,
+        "Precipitation": prec,
+    };
+
+    L.control.layers(baseLayers, overlays).addTo(map);
+
 </script>
 
 </body>
