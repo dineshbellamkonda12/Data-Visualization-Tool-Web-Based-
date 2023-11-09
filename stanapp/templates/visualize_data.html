@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stanstec Rainfall at RG_A in Birmingham</title>
+    <!-- CSS links for Bootstrap, Flatpickr, and Leaflet libraries -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
@@ -22,6 +23,7 @@
 
 <body class="bg-light">
 
+<!-- Navigation bar -->
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3 pl-5 pr-5">
     <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -42,6 +44,7 @@
     </div>
 </nav>
 
+<!-- Container which contains the modal and buttons for filtering the data -->
 <div class="container mt-5">
     <div class="container row justify-content-center mb-3">
         <h2 class="text-center">Rainfall at a rain gauge (RG_A) in central Birmingham </h2>
@@ -53,9 +56,8 @@
         </p>
     </div>
 
+    <!-- Buttons for aggregation and filtering -->
     <div class="mb-4">
-        <!-- Button trigger modal -->
-        
         <div class="container">
             <div class="row">
                 
@@ -77,11 +79,13 @@
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title text-center" id="filterModalLabel">Filter Data Using Start and End Dates Below</h5>
+                    <!-- Close button for the modal -->
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                     </div>
                     <div class="modal-body">
+                        <!-- Form for selecting start and end dates -->
                         <div class="row justify-content-center mb-4">
                             <div class="col w-25">
                                 <div class="form-group">
@@ -96,20 +100,22 @@
                                 </div>
                             </div>
                         </div>
-                    <div class="row mb-4">
-                        <div class="col">
-                            <button onclick="filterData()" class="btn btn-primary btn-block" data-dismiss="modal">Filter Data</button> 
-                        </div>
-                        <div class="col">
-                            <button type="button" class="btn btn-info btn-block" onclick="refreshPage()">Reset</button>
-                        </div>
-                    </div> 
+                        <!-- Buttons for applying or resetting the filter -->
+                        <div class="row mb-4">
+                            <div class="col">
+                                <button onclick="filterData()" class="btn btn-primary btn-block" data-dismiss="modal">Filter Data</button> 
+                            </div>
+                            <div class="col">
+                                <button type="button" class="btn btn-info btn-block" onclick="refreshPage()">Reset</button>
+                            </div>
+                        </div> 
+                    </div>
                 </div>
-            </div>
             </div>
         </div>
     </div>
 
+    <!-- Section for displaying the graph -->
     <div class="justify-content-center mb-5">
         <div class="border border-primary p-3 rounded mb-4">
             <div id="graphDiv"></div>
@@ -117,12 +123,14 @@
         <div class="container row justify-content-center mb-3">
             <h5 class="text-center">Birmingham Map at latitude= 52.48049047465328, longitude= -1.8978672581749725</h5>
         </div>
+        <!-- Section for displaying the map -->
         <div class="border border-primary p-3 rounded">
             <div id="map"></div>
         </div>
     </div>
 </div>
 
+<!-- JavaScript libraries and scripts -->
 <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
@@ -131,7 +139,9 @@
 <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
+<!-- JavaScript code for data visualization and map display -->
 <script>
+    // Variables to store the retrieved data from backend
     var allDates = JSON.parse('{{ dates|safe }}');
     var allRainfallValues = JSON.parse('{{ rainfall_values|safe }}');
 
@@ -150,10 +160,11 @@
     var years = allYears;
     var rainfall_values_by_years = allRainfallValuesByYears;
 
+    // Boolean variables for tracking the aggregation state(Month or year)
     let isaggregatedatabymonth = false;
     let isaggregatedatabyyear = false;
 
-
+    // Trace for the initial graph
     var trace1 = {
         x: dates,
         y: rainfall_values,
@@ -166,6 +177,7 @@
 
     var data = [trace1];
 
+    // Data and layout for the initial plot
     var layout = {
         title: 'Rainfall Data Visualization',
         xaxis: {
@@ -176,8 +188,10 @@
         }
     };
 
+    // Plotting the Initial Plot
     Plotly.newPlot('graphDiv', data, layout);
 
+    // Initialize Flatpickr date pickers for start and end dates
     var startDatePicker = flatpickr("#start_date", {
         enableTime: true,
         dateFormat: "Y-m-d H:i:S",
@@ -188,10 +202,12 @@
         dateFormat: "Y-m-d H:i:S",
     });
 
+    // Function to refresh the page
     function refreshPage() {
         location.reload();
     }
 
+    // Function to filter data and plot data based on selected start and end dates
     function filterData() {
         var startDate = document.getElementById("start_date").value;
         var endDate = document.getElementById("end_date").value;
@@ -207,7 +223,9 @@
                 }
             }
 
+            // Handling the filtered data based on the aggregation state
             if(isaggregatedatabymonth) {
+                // Filtering data aggregated by month
                 filteredDates.splice(0, filteredDates.length);
                 filteredRainfallValues.splice(0, filteredRainfallValues.length);
                 for (var i = 0; i < months.length; i++) {
@@ -220,6 +238,7 @@
             }
 
             if(isaggregatedatabyyear) {
+                // Filtering data aggregated by year
                 filteredDates.splice(0, filteredDates.length);
                 filteredRainfallValues.splice(0, filteredRainfallValues.length);
                 for (var i = 0; i < years.length; i++) {
@@ -231,6 +250,7 @@
                 isaggregatedatabyyear = false;
             }
 
+            // Creating a new trace and data for the filtered plot
             var filteredTrace = {
                 x: filteredDates,
                 y: filteredRainfallValues,
@@ -243,10 +263,12 @@
 
             var filteredData = [filteredTrace];
 
+            // Plotting the filtered data
             Plotly.newPlot('graphDiv', filteredData, layout);
         }
     }
 
+    // Function to aggregate data by month
     function aggregateDataByMonth() {
         var trace1 = {
             x: months,
@@ -259,7 +281,8 @@
         };
     
         var data = [trace1];
-    
+        
+        // Layout for the aggregated data by month
         var layout = {
             title: 'Rainfall Data Visualization',
             xaxis: {
@@ -269,10 +292,12 @@
                 title: 'Rainfall(mm)'
             }
         };
-    
+        
+        // Plotting the aggregated data by month
         Plotly.newPlot('graphDiv', data, layout); 
         isaggregatedatabymonth = true;
 
+        // Destroying and recreating Flatpickr date pickers for month format
         startDatePicker.destroy();
         startDatePicker = flatpickr("#start_date", {
             enableTime: false,
@@ -290,6 +315,7 @@
         });
     }
 
+    // Function to aggregate data by year
     function aggregateDataByYear() {
         var trace1 = {
             x: years,
@@ -312,7 +338,8 @@
                 title: 'Rainfall(mm)'
             }
         };
-    
+        
+        // Plotting the aggregated data by year
         Plotly.newPlot('graphDiv', data, layout);   
         isaggregatedatabyyear = true; 
         
@@ -329,19 +356,23 @@
         });
     }
 
+    // Initializing the Leaflet map with the specified coordinates
     var map = L.map('map').setView([52.48049047465328, -1.8978672581749725], 13);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
         maxZoom: 18,
     }).addTo(map);
 
+    // Adding a marker for the rain gauge location
     L.marker([52.48049047465328, -1.8978672581749725]).addTo(map)
     .bindPopup('Rain Gauge RG_A in Birmingham at 52.48049047465328 and -1.8978672581749725');
 
+    // OpenWeatherMap API key and URL for weather map tiles
     var owmApiKey = "6a245621503bfcb08400248d491fca20"; 
     var owmUrl = "https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.png?appid=" + owmApiKey;
     var owmAttribution = 'Weather data © <a href="https://openweathermap.org/">OpenWeatherMap</a>';
 
+    // Adding temperature and precipitation layers to the map
     var temp = L.tileLayer(owmUrl, {layer: 'temp_new', attribution: owmAttribution, opacity: 0.5});
     temp.addTo(map);
 
@@ -359,6 +390,7 @@
         "Precipitation": prec,
     };
 
+    // Adding control layers to the Leaflet map
     L.control.layers(baseLayers, overlays).addTo(map);
 
 </script>

@@ -9,6 +9,7 @@
 </head>
 
 <body>
+    <!-- Navigation Bar Section -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3 pl-5 pr-5">
         <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -33,29 +34,35 @@
         <p class='mt-4 text-center mb-4'>Please select an excel file from your local storage, The below feature will generate graph for two instances (x-axis and y-axis)</p>
         <div class="row mb-4">
             <div class="col text-center">
+                <!-- File input field -->
                 <input type="file" id="input" />
             </div>
         </div>
         
+        <!-- Buttons and spinner for user interaction -->
         <div class="row">
             <div class="col d-flex justify-content-center">
+                <!-- Button to generate chart -->
                 <button type="button" class="btn btn-info mr-3" onclick="handleFile()">Generate Chart</button>
                 <button type="button" class="btn btn-info mr-3" onclick="refreshPage()">Reset</button>
+                <!-- Spinner for indicating loading activity -->
                 <div class="spinner-border text-primary" role="status" id="loadingSpinner" style="display: none;">
                     <span class="sr-only">Loading...</span>
                 </div>
             </div>
         </div>
+        <!-- Div for displaying the chart -->
         <div id="chart"></div>
     </div>
 
+    <!-- External Script Tags -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.0/xlsx.full.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
 
     <script>
-
+        // Function to display or the loading spinner
         function showLoader() {
             $('#loadingSpinner').show();
         }
@@ -64,10 +71,12 @@
             $('#loadingSpinner').hide();
         }
 
+        // Function to refresh the page
         function refreshPage() {
             location.reload();
         }
 
+        // Function to handle the uploaded file and generate the chart
         function handleFile() {
             showLoader();
             const files = document.getElementById('input').files;
@@ -91,6 +100,7 @@
                 const xValues = [];
                 const yValues = [];
 
+                // Loop through the Excel data and extract x and y values
                 for (let i = range.s.r; i <= range.e.r; ++i) {
                     const cell = sheet[XLSX.utils.encode_cell({ r: i, c: 0 })];
                     const cell2 = sheet[XLSX.utils.encode_cell({ r: i, c: 1 })];
@@ -100,6 +110,7 @@
                     }
                 }
 
+                // Define the trace for the chart
                 const trace = {
                     x: xValues,
                     y: yValues,
@@ -107,6 +118,7 @@
                     marker: { color: 'red' },
                 };
 
+                // Set the layout for the chart
                 const plotData = [trace];
                 const layout = {
                     title: 'Excel Data Plot',
@@ -118,6 +130,7 @@
                     }
                 };
 
+                // Generate the plot using Plotly
                 Plotly.newPlot('chart', plotData, layout);
                 hideLoader();
             };

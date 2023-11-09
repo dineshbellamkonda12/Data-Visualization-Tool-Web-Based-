@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 </head>
 <body>
+    <!-- Navigation bar -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3 pl-5 pr-5">
         <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -29,6 +30,7 @@
     </nav>
     <div class="container mt-5">
         <div class="container row">
+            <!-- Prediction input form section -->
             <div class="col border border-info border-5 rounded p-3">
                 <h2>Rainfall Prediction</h2>
                 <label for="startDateInput">Start Date:</label>
@@ -42,6 +44,7 @@
                     </div>
                 </div>
             </div>
+
             <div class="col border border-info border-5 rounded p-3">
                 <h2 class="mb-3">Data Prediction</h2>
                 <p>This data is coming from backend database and this data is predicted using linear regression machine learning model, 
@@ -53,7 +56,9 @@
         </div>
         <div class="container mt-5">
             <div id="chart"></div>
+            <!-- Button to download the data as Excel -->
             <button id="downloadBtn" style="display: none;" class="btn btn-success mt-2 mb-3">Download as Excel</button>
+                <!-- Table for displaying the predicted data -->
                 <table id="predictionTable" class="table mt-3">
                     <thead>
                         <tr>
@@ -68,6 +73,7 @@
         </div>
     </div>
 
+    <!-- JavaScript libraries -->
     <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
@@ -78,6 +84,7 @@
     <script>
         
         $(document).ready(function () {
+            // Initializing flatpickr date pickers
             flatpickr('#startDateInput', {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
@@ -88,10 +95,12 @@
                 dateFormat: "Y-m-d H:i",
             });
 
+            // Event handler for the predict button
             $('#predictBtn').on('click', function () {
                 var startDate = $('#startDateInput').val();
                 var endDate = $('#endDateInput').val();
                 $('#loading').show();
+                // Making an AJAX request to fetch predicted data
                 $.ajax({
                     url: '/predict_range/',
                     type: 'POST',
@@ -103,10 +112,13 @@
                     success: function (data) {
                         $('#loading').hide();
                         $('#downloadBtn').show();
+                         // Clearing the previous data in the table
                         $('#predictionTableBody').empty();
+                        // Populating the table with the predicted data
                         data.predictions.forEach(function (item) {
                             $('#predictionTableBody').append('<tr><td>' + item.date + '</td><td>' + item.prediction + '</td></tr>');
                         });
+                        // Creating the trace for the Plotly chart
                         var dates = data.predictions.map(function (item) {
                             return item.date;
                         });
@@ -132,9 +144,11 @@
                             }
                         };
                         var config = {responsive: true};
+                        // Plotting the chart using Plotly
                         Plotly.newPlot('chart', [trace], layout, config);
                     },
                     error: function (error) {
+                        // Handling errors in fetching data
                         $('#loading').hide();
                         console.error('Error fetching data:', error);
                     }
@@ -142,6 +156,7 @@
             });
         });
 
+        // Function to download the table data as Excel
         function downloadTableAsExcel() {
             const table = document.getElementById('predictionTable');
             const rows = table.querySelectorAll('tr');
@@ -155,11 +170,13 @@
                 for (let i = 0; i < s.length; i++) view[i] = s.charCodeAt(i) & 0xff;
                 return buf;
             }
-        
+            // Saving the Excel file using FileSaver.js
             saveAs(new Blob([s2ab(wbout)], { type: 'application/octet-stream' }), 'tableData.xlsx');
         }
 
+        // Event handler for the download button
         $('#downloadBtn').on('click', function () {
+            // Calling the function to download table data as Excel
             downloadTableAsExcel();
         });
 
