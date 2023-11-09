@@ -1,5 +1,8 @@
 ## Project Name
+
 Visualization App
+
+## Please read "UI Documentation.pdf" file for more UI information about the visualization App.
 
 ## Description
 Visualization App is a web application that allows users to to be able to interact, extract and filter data from the chart based on their condition. It is built using Python Django for the backend and HTML, CSS and Javascript for the frontend.
@@ -14,7 +17,7 @@ pip (Python package manager)
 Git
 
 1. Clone the Repository
-Clone the project repository from the source control repository using Git: git clone https://github.com/dineshbellamkonda12/Data-Visualization-Tool-Web-Based-.git
+Clone or Fork the project repository from the source control repository using Git: git clone https://github.com/dineshbellamkonda12/Data-Visualization-Tool-Web-Based-.git
 
 2. Create and Activate Virtual Environment (Optional but Recommended)
 Navigate to the project directory and create a virtual environment using below commands:
