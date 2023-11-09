@@ -2,7 +2,7 @@
 
 Visualization App
 
-## Please read "UI Documentation.pdf" file for more UI information about the visualization App.
+## Please read "UI Documentation.pdf(is available inside the project repository)" file for more UI information about the visualization App.
 
 ## Description
 Visualization App is a web application that allows users to to be able to interact, extract and filter data from the chart based on their condition. It is built using Python Django for the backend and HTML, CSS and Javascript for the frontend.
