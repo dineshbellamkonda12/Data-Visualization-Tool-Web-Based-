@@ -24,26 +24,7 @@
 <body class="bg-light">
 
 <!-- Navigation bar -->
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark pt-3 pb-3 pl-5 pr-5">
-    <a class="navbar-brand" href="{% url 'visualize_data' %}">Visualization App</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-    </button>
-    <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ml-auto">
-            <li class="nav-item">
-                <a class="nav-link active" href="{% url 'visualize_data' %}">Home</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'predict_range' %}">Predict Data</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{% url 'custom_data' %}">Custom Visualization</a>
-            </li>
-        </ul>
-    </div>
-</nav>
-
+{% include 'nav_bar.html' %}
 <!-- Container which contains the modal and buttons for filtering the data -->
 <div class="container mt-5">
     <div class="container row justify-content-center mb-3">
